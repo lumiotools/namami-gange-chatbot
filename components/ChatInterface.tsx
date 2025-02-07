@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowUpRight, Paperclip, Send } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MarkdownRenderer } from "./MarkdownRenderer";
@@ -25,13 +25,36 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading, scrollToBottom]); // Scroll when messages change or loading state changes
+  }, [messages, scrollToBottom]); // Added scrollToBottom to dependencies
+
+  const parseStreamChunk = (chunk: string) => {
+    try {
+      const lines = chunk.split("\n");
+      let content = "";
+
+      for (const line of lines) {
+        if (line.startsWith("0:")) {
+          // Remove the '0:' prefix and any surrounding quotes
+          const cleanedContent = line
+            .slice(2)
+            .replace(/^"/, "")
+            .replace(/"$/, "");
+          // Replace escaped newlines with actual newlines
+          content += cleanedContent.replace(/\\n/g, "\n");
+        }
+      }
+      return content;
+    } catch (error) {
+      console.error("Error parsing chunk:", error);
+      return "";
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,13 +76,36 @@ export default function ChatInterface() {
 
       if (!response.ok) throw new Error(response.statusText);
 
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      setIsLoading(false);
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.message.content },
-      ]);
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) throw new Error("No reader available");
+
+      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+      let accumulatedContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const parsedContent = parseStreamChunk(chunk);
+        accumulatedContent += parsedContent;
+
+        setMessages((prev) => {
+          const lastMessage = prev[prev.length - 1];
+          if (lastMessage.role === "assistant") {
+            return [
+              ...prev.slice(0, -1),
+              { ...lastMessage, content: accumulatedContent },
+            ];
+          }
+          return prev;
+        });
+      }
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
@@ -91,8 +137,8 @@ export default function ChatInterface() {
               </Avatar>
             )}
             <div
-              className={`inline-block rounded-2xl p-4 max-w-[80%] prose prose-sm ${
-                message.role === "user" ? "bg-[#E8F5F0]" : ""
+              className={`inline-block rounded-2xl p-4 max-w-[80%] ${
+                message.role === "user" ? "bg-[#E8F5F0]" : "bg-gray-50"
               }`}
             >
               <MarkdownRenderer content={message.content} />
@@ -105,12 +151,12 @@ export default function ChatInterface() {
               <AvatarImage src="/placeholder.svg" />
               <AvatarFallback>AI</AvatarFallback>
             </Avatar>
-            <div className="inline-block rounded-2xl bg-gray-100 p-4">
+            <div className="inline-block rounded-2xl bg-gray-50 p-4">
               <p className="text-sm">Thinking...</p>
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} /> {/* Invisible element to scroll to */}
+        <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">

@@ -1,9 +1,6 @@
+import { streamText } from "ai"
+import { openai } from "@ai-sdk/openai"
 import { NextResponse } from "next/server"
-import OpenAI from "openai"
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
 
 const systemPrompt = `You are an AI assistant for the Namami Gange Programme, a comprehensive initiative to clean and rejuvenate the Ganga River in India. Your role is to educate and inform residents about the programme, its objectives, ongoing efforts, and how they can contribute.
 
@@ -122,24 +119,27 @@ When answering questions:
 Remember to maintain a helpful and educational tone while providing accurate information from this knowledge base.`
 
 export async function POST(req: Request) {
-  const { messages } = await req.json()
-
-  if (!messages || !Array.isArray(messages)) {
-    return NextResponse.json({ error: "Invalid messages format" }, { status: 400 })
-  }
-
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    const { messages } = await req.json()
+
+    if (!messages || !Array.isArray(messages)) {
+      return NextResponse.json({ error: "Invalid messages format" }, { status: 400 })
+    }
+
+    const result = streamText({
+      model: openai("gpt-4o-mini"),
       messages: [
         { role: "system", content: systemPrompt },
         ...messages.map((m) => ({ role: m.role as "user" | "assistant", content: m.content })),
       ],
     })
 
-    return NextResponse.json({
-      message: completion.choices[0].message,
-      status: completion.choices[0].finish_reason,
+    return result.toDataStreamResponse({
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
     })
   } catch (error) {
     console.error("Error:", error)
