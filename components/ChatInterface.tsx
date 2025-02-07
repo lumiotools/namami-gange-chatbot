@@ -7,6 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MarkdownRenderer } from "./MarkdownRenderer";
+import { ScrollArea } from "./ui/scroll-area";
 
 type Message = {
   role: "user" | "assistant";
@@ -122,7 +123,7 @@ export default function ChatInterface() {
 
   return (
     <div className="col-span-2 rounded-2xl border border-gray-100 bg-white flex flex-col h-[calc(100vh-8rem)]">
-      <div className="flex-grow p-6 overflow-y-auto space-y-4">
+      <ScrollArea className="flex-grow p-6 space-y-4">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -138,7 +139,7 @@ export default function ChatInterface() {
             )}
             <div
               className={`inline-block rounded-2xl p-4 max-w-[80%] ${
-                message.role === "user" ? "bg-[#E8F5F0]" : "bg-gray-50"
+                message.role === "user" ? "bg-[#E8F5F0]" : ""
               }`}
             >
               <MarkdownRenderer content={message.content} />
@@ -157,7 +158,7 @@ export default function ChatInterface() {
           </div>
         )}
         <div ref={messagesEndRef} />
-      </div>
+      </ScrollArea>
       <div className="p-4 border-t">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <Input
