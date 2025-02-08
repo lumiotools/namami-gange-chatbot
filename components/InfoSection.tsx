@@ -17,7 +17,7 @@ export default function InfoSection() {
 
   return (
     <div className="rounded-3xl border border-gray-100 bg-white p-6">
-      <h2 className="text-xl mb-6">
+      <h2 className="text-md sm:text-xl mb-6">
         Key Achievements Of Namami Gange Programme
       </h2>
       <div className="space-y-2 bg-[#F8FDFB] rounded-xl border border-gray-100">
@@ -27,7 +27,7 @@ export default function InfoSection() {
               onClick={() => toggleItem(expandedItem === index ? null : index)}
               className="w-full flex items-center justify-between p-4 text-left hover:bg-[#E8F5F0] transition-colors"
             >
-              <span className="text-gray-700">{achievement.title}</span>
+              <span className="text-gray-700  text-sm sm:text-lg">{achievement.title}</span>
               <ChevronDown
                 className={`h-5 w-5 text-gray-400 transition-transform ${
                   expandedItem === index ? "transform rotate-180" : ""

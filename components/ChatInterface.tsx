@@ -122,7 +122,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="col-span-2 rounded-2xl border border-gray-100 bg-white flex flex-col h-[calc(100vh-8rem)]">
+    <div id="chat" className="col-span-2 rounded-2xl border border-gray-100 bg-white flex flex-col h-[calc(100vh-8rem)]">
       <ScrollArea className="flex-grow p-6 space-y-4">
         {messages.map((message, index) => (
           <div

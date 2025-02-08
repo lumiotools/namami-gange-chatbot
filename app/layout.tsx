@@ -1,10 +1,11 @@
 import "./globals.css"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Ubuntu } from "next/font/google" // Import Ubuntu font
 import { ThemeProvider } from "@/components/theme-provider"
 import type React from "react" // Added import for React
 
-const inter = Inter({ subsets: ["latin"] })
+// Use Ubuntu font with Latin subset
+const ubuntu = Ubuntu({ subsets: ["latin"], weight: "400" })
 
 export const metadata: Metadata = {
   title: "Namami Gange Programme Chatbot",
@@ -18,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${ubuntu.className} antialiased`}> {/* Apply Ubuntu font */}
         {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
           {children}
         {/* </ThemeProvider> */}
@@ -26,4 +27,3 @@ export default function RootLayout({
     </html>
   )
 }
-
