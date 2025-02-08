@@ -42,7 +42,7 @@ export default function Home() {
   return (
     <main className="relative">
       {/* Hero Section */}
-      <div className="relative sm:h-[70vh] lg:h-[90vh] h-[50vh] overflow-hidden ">
+      <div className="relative sm:h-[70vh] lg:h-[91vh] h-[50vh] overflow-hidden ">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide}
