@@ -109,7 +109,7 @@ export default function Home() {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="bg-transparent border-white text-white hover:bg-white/10 text-sm sm:text-md md:text-lg"
+                  className="bg-transparent border-white text-white hover:bg-white text-sm sm:text-md md:text-lg"
                 >
                   Get Involved
                 </Button>
