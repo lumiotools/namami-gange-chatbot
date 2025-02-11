@@ -25,6 +25,7 @@ export default function ChatInterface() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [chatId, setChatId] = useState<string | null>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -107,6 +108,13 @@ export default function ChatInterface() {
           return prev;
         });
       }
+
+      // **Update Chat History after AI Response**
+      await updateChatHistory([
+        ...messages,
+        userMessage,
+        { role: "assistant", content: accumulatedContent },
+      ]);
     } catch (error) {
       console.error("Error:", error);
       setMessages((prev) => [
@@ -121,8 +129,29 @@ export default function ChatInterface() {
     }
   };
 
+  // **Function to update chat history**
+  const updateChatHistory = async (updatedMessages: Message[]) => {
+    try {
+      const res = await fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: chatId, messages: updatedMessages }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.data?.id) {
+        setChatId(data.data.id); // Store chat ID for future updates
+      }
+    } catch (err) {
+      console.error("Failed to update chat history:", err);
+    }
+  };
+
   return (
-    <div id="chat" className="col-span-2 rounded-2xl border border-gray-100 bg-white flex flex-col h-[calc(100vh-8rem)]">
+    <div
+      id="chat"
+      className="col-span-2 rounded-2xl border border-gray-100 bg-white flex flex-col h-[calc(100vh-8rem)]"
+    >
       <ScrollArea className="flex-grow p-6 space-y-4">
         {messages.map((message, index) => (
           <div
