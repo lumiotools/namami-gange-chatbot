@@ -19,6 +19,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script id="warmly-script-loader" src="https://opps-widget.getwarmly.com/warmly.js?clientId=86babbef40c5d6164dcf5948140d010d" defer></script>
+      </head>
       <body className={`${ubuntu.className} antialiased`}> {/* Apply Ubuntu font */}
         {/* <ThemeProvider attribute="class" defaultTheme="system" enableSystem> */}
           {children}
